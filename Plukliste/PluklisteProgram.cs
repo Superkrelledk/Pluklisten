@@ -4,6 +4,7 @@ namespace Plukliste;
 class PluklisteProgram
 {
 
+
     static void Main()
     {
         //Arrange
@@ -20,13 +21,6 @@ class PluklisteProgram
             return;
         }
         files = Directory.EnumerateFiles("export").ToList();
-
-        static void PrintOptionsOutputText(char key, string description, ConsoleColor standardColor)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(key);
-            Console.WriteLine(description);
-        }
         //ACT
         while (readKey != 'Q')
         {
@@ -41,11 +35,7 @@ class PluklisteProgram
                 Console.WriteLine($"Plukliste {index + 1} af {files.Count}");
                 Console.WriteLine($"\nfile: {files[index]}");
 
-                //read file
-                FileStream file = File.OpenRead(files[index]);
-                System.Xml.Serialization.XmlSerializer xmlSerializer =
-                    new System.Xml.Serialization.XmlSerializer(typeof(Pluklist));
-                var plukliste = (Pluklist?)xmlSerializer.Deserialize(file);
+                var plukliste = LoadPluklistFromFile(files[index]);
 
                 //print plukliste
                 if (plukliste != null && plukliste.Lines != null)
@@ -60,7 +50,7 @@ class PluklisteProgram
                         Console.WriteLine("{0,-7}{1,-9}{2,-20}{3}", item.Amount, item.Type, item.ProductID, item.Title);
                     }
                 }
-                file.Close();
+              
             }
             //Print options
             Console.WriteLine("\n\nOptions:");
@@ -109,6 +99,31 @@ class PluklisteProgram
             }
             Console.ForegroundColor = standardColor; //reset color
 
+        }
+    }
+    static void PrintOptionsOutputText(char key, string description, ConsoleColor standardColor)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write(key);
+        Console.ForegroundColor = standardColor;
+        Console.WriteLine(description);
+    }
+    static Pluklist? LoadPluklistFromFile(string filePath)
+    {
+        try
+        {
+            using (FileStream file = File.OpenRead(filePath))
+            {
+                System.Xml.Serialization.XmlSerializer xmlSerializer = 
+                    new System.Xml.Serialization.XmlSerializer(typeof(Pluklist));
+                return (Pluklist?)xmlSerializer.Deserialize(file);
+            }
+            // File automatically closes here
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading file {filePath}: {ex.Message}");
+            return null;
         }
     }
 }
