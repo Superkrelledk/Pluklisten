@@ -21,13 +21,18 @@ class PluklisteProgram
         }
         files = Directory.EnumerateFiles("export").ToList();
 
+        static void PrintOptionsOutputText(char key, string description, ConsoleColor standardColor)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(key);
+            Console.WriteLine(description);
+        }
         //ACT
         while (readKey != 'Q')
         {
             if (files.Count == 0)
             {
                 Console.WriteLine("No files found.");
-
             }
             else
             {
@@ -57,38 +62,23 @@ class PluklisteProgram
                 }
                 file.Close();
             }
-
             //Print options
             Console.WriteLine("\n\nOptions:");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("Q");
-            Console.ForegroundColor = standardColor;
-            Console.WriteLine("uit");
+            PrintOptionsOutputText('Q', "uit", standardColor);
+
             if (index >= 0)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("A");
-                Console.ForegroundColor = standardColor;
-                Console.WriteLine("fslut plukseddel");
+                PrintOptionsOutputText('A', "fslut plukseddel", standardColor);
             }
             if (index > 0)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("F");
-                Console.ForegroundColor = standardColor;
-                Console.WriteLine("orrige plukseddel");
+                PrintOptionsOutputText('F', "orrige plukseddel", standardColor);
             }
             if (index < files.Count - 1)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("N");
-                Console.ForegroundColor = standardColor;
-                Console.WriteLine("æste plukseddel");
+                PrintOptionsOutputText('N', "æste plukseddel", standardColor);
             }
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("G");
-            Console.ForegroundColor = standardColor;
-            Console.WriteLine("enindlæs pluksedler");
+            PrintOptionsOutputText('G', "enindlæs pluksedler", standardColor);
 
             readKey = Console.ReadKey().KeyChar;
             if (readKey >= 'a') readKey -= (char)('a' - 'A'); //HACK: To upper
