@@ -1,0 +1,153 @@
+﻿//Eksempel på funktionel kodning hvor der kun bliver brugt et model lag
+
+namespace Plukliste;
+
+class PluklisteProgram
+{
+    private static ConsoleColor _standardColor;
+    private const string ExportDirectory = "export";
+    private const string ImportDirectory = "import";
+
+    static void Main()
+    {
+        //Arrange
+        char readKey = ' ';
+        List<string> files;
+        var index = -1;
+        ConsoleColor color = ConsoleColor.White;
+        _standardColor = Console.ForegroundColor;
+        Directory.CreateDirectory(ImportDirectory);
+        Directory.CreateDirectory(ExportDirectory);
+
+       
+        files = LoadFiles();
+        
+        //ACT
+        while (readKey != 'Q')
+        {
+            if (files.Count == 0)
+            {
+                Console.WriteLine("No files found.");
+            }
+            else
+            {
+                if (index == -1) index = 0;
+
+                Console.WriteLine($"Plukliste {index + 1} af {files.Count}");
+                Console.WriteLine($"\nfile: {files[index]}");
+
+                var plukliste = LoadPluklistFromFile(files[index]);
+
+                //print plukliste
+                if (plukliste != null && plukliste.Lines != null)
+                {
+                    Console.WriteLine("\n{0, -13}{1}", "Name:", plukliste.Name);
+                    Console.WriteLine("{0, -13}{1}", "Forsendelse:", plukliste.Forsendelse);
+                    //TODO: Add adresse to screen print
+
+                    Console.WriteLine("\n{0,-7}{1,-9}{2,-20}{3}", "Antal", "Type", "Produktnr.", "Navn");
+                    foreach (var item in plukliste.Lines)
+                    {
+                        Console.WriteLine("{0,-7}{1,-9}{2,-20}{3}", item.Amount, item.Type, item.ProductID, item.Title);
+                    }
+                }
+            }
+            
+            //Print options
+            Console.WriteLine("\n\nOptions:");
+            PrintOptionsOutputText('Q', "uit");
+
+            if (index >= 0)
+            {
+                PrintOptionsOutputText('A', "fslut plukseddel");
+            }
+            if (index > 0)
+            {
+                PrintOptionsOutputText('F', "orrige plukseddel");
+            }
+            if (index < files.Count - 1)
+            {
+                PrintOptionsOutputText('N', "æste plukseddel");
+            }
+            PrintOptionsOutputText('G', "enindlæs pluksedler");
+
+            readKey = Console.ReadKey().KeyChar;
+            readKey = char.ToUpper(readKey);
+            Console.Clear();
+
+            WithColor(ConsoleColor.Red, () =>
+            {
+                switch (readKey)
+                {
+                    case 'G':
+                        files = LoadFiles();
+                        index = -1;
+                        Console.WriteLine("Pluklister genindlæst");
+                        break;
+                    case 'F':
+                        if (index > 0) index--;
+                        break;
+                    case 'N':
+                        if (index < files.Count - 1) index++;
+                        break;
+                    case 'A':
+                        MoveFileToImport(files[index]);
+                        Console.WriteLine($"Plukseddel {files[index]} afsluttet.");
+                        files.Remove(files[index]);
+                        if (index == files.Count) index--;
+                        break;
+                }
+            });
+        }
+    }
+
+    static void WithColor(ConsoleColor color, Action writeAction)
+    {
+        var originalColor = Console.ForegroundColor;
+        try
+        {
+            Console.ForegroundColor = color;
+            writeAction();
+        }
+        finally
+        {
+            Console.ForegroundColor = originalColor;
+        }
+    }
+
+    static void PrintOptionsOutputText(char key, string description)
+    {
+        WithColor(ConsoleColor.Green, () => Console.Write(key));
+        Console.WriteLine(description);
+    }
+
+    static List<string> LoadFiles()
+    {
+        return Directory.EnumerateFiles(ExportDirectory).ToList();
+    }
+
+    static void MoveFileToImport(string filePath)
+    {
+        var fileWithoutPath = Path.GetFileName(filePath);
+        var destinationPath = Path.Combine(ImportDirectory, fileWithoutPath);
+        File.Move(filePath, destinationPath, overwrite: true);
+    }   
+
+    static Pluklist? LoadPluklistFromFile(string filePath)
+    {
+        try
+        {
+            using (FileStream file = File.OpenRead(filePath))
+            {
+                System.Xml.Serialization.XmlSerializer xmlSerializer = 
+                    new System.Xml.Serialization.XmlSerializer(typeof(Pluklist));
+                return (Pluklist?)xmlSerializer.Deserialize(file);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading file {filePath}: {ex.Message}");
+            return null;
+        }
+    }
+}
