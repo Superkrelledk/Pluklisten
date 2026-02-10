@@ -1,6 +1,7 @@
 ﻿namespace Plukliste;
 public class Pluklist
 {
+    public string? Type;
     public string? Name;
     public string? Forsendelse;
     public string? Adresse;

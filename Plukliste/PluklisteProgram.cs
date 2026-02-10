@@ -1,6 +1,8 @@
 ﻿//Eksempel på funktionel kodning hvor der kun bliver brugt et model lag
 
 using System.Xml.Linq;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Plukliste;
 
@@ -21,9 +23,9 @@ class PluklisteProgram
         Directory.CreateDirectory(ImportDirectory);
         Directory.CreateDirectory(ExportDirectory);
 
-       
+
         files = LoadFiles();
-        
+
         //ACT
         while (readKey != 'Q')
         {
@@ -45,7 +47,6 @@ class PluklisteProgram
                 {
                     Console.WriteLine("\n{0, -13}{1}", "Name:", plukliste.Name);
                     Console.WriteLine("{0, -13}{1}", "Forsendelse:", plukliste.Forsendelse);
-                    //TODO: Add adresse to screen print
 
                     Console.WriteLine("\n{0,-7}{1,-9}{2,-20}{3}", "Antal", "Type", "Produktnr.", "Navn");
                     foreach (var item in plukliste.Lines)
@@ -54,7 +55,7 @@ class PluklisteProgram
                     }
                 }
             }
-            
+
             //Print options
             Console.WriteLine("\n\nOptions:");
             PrintOptionsOutputText('Q', "uit");
@@ -93,6 +94,13 @@ class PluklisteProgram
                         if (index < files.Count - 1) index++;
                         break;
                     case 'A':
+                        var plukliste = LoadPluklistFromFile(files[index]);
+
+                        if (plukliste != null)
+                        {
+                            GeneratePrintHTML(plukliste, files[index]);
+                        }
+
                         MoveFileToImport(files[index]);
                         Console.WriteLine($"Plukseddel {files[index]} afsluttet.");
                         files.Remove(files[index]);
@@ -128,19 +136,14 @@ class PluklisteProgram
         return Directory.EnumerateFiles(ExportDirectory).ToList();
     }
 
-    static void MoveFileToImport(string filePath)
-    {
-        var fileWithoutPath = Path.GetFileName(filePath);
-        var destinationPath = Path.Combine(ImportDirectory, fileWithoutPath);
-        File.Move(filePath, destinationPath, overwrite: true);
-    }   
-    static void GeneratePrintHTML(Pluklist plukliste, string xmlFilePath)
+    public static void GeneratePrintHTML(Pluklist plukliste, string xmlFilePath)
     {
         string templateFile = plukliste.Type switch
         {
             "OPGRADE" => "PRINT-OPGRADE.html",
             "OPSIGELSE" => "PRINT-OPSIGELSE.html",
-            "WELCOME" => "PRINT-WELCOME.html"
+            "WELCOME" => "PRINT-WELCOME.html",
+            _ => "PRINT-WELCOME.html"
         };
 
         string template = File.ReadAllText(templateFile);
@@ -166,12 +169,19 @@ class PluklisteProgram
                          $"<td>{item.Title}</td></tr>\n";
         }
 
-        template = template.Replace("[LINES]", linesHtml);
+        template = template.Replace("[Plukliste]", linesHtml);
 
         var fileName = Path.GetFileNameWithoutExtension(xmlFilePath) + ".html";
         var outputPath = Path.Combine(ImportDirectory, fileName);
 
         File.WriteAllText(outputPath, template);
+    }
+
+    static void MoveFileToImport(string filePath)
+    {
+        var fileWithoutPath = Path.GetFileName(filePath);
+        var destinationPath = Path.Combine(ImportDirectory, fileWithoutPath);
+        File.Move(filePath, destinationPath, overwrite: true);
     }
 
     static Pluklist? LoadPluklistFromFile(string filePath)
@@ -180,7 +190,7 @@ class PluklisteProgram
         {
             using (FileStream file = File.OpenRead(filePath))
             {
-                System.Xml.Serialization.XmlSerializer xmlSerializer = 
+                System.Xml.Serialization.XmlSerializer xmlSerializer =
                     new System.Xml.Serialization.XmlSerializer(typeof(Pluklist));
                 return (Pluklist?)xmlSerializer.Deserialize(file);
             }
@@ -191,5 +201,4 @@ class PluklisteProgram
             return null;
         }
     }
-
 }
