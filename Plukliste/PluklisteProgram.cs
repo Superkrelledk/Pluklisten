@@ -1,5 +1,7 @@
 ﻿//Eksempel på funktionel kodning hvor der kun bliver brugt et model lag
 
+using System.Xml.Linq;
+
 namespace Plukliste;
 
 class PluklisteProgram
@@ -132,6 +134,45 @@ class PluklisteProgram
         var destinationPath = Path.Combine(ImportDirectory, fileWithoutPath);
         File.Move(filePath, destinationPath, overwrite: true);
     }   
+    static void GeneratePrintHTML(Pluklist plukliste, string xmlFilePath)
+    {
+        string templateFile = plukliste.Type switch
+        {
+            "OPGRADE" => "PRINT-OPGRADE.html",
+            "OPSIGELSE" => "PRINT-OPSIGELSE.html",
+            "WELCOME" => "PRINT-WELCOME.html"
+        };
+
+        string template = File.ReadAllText(templateFile);
+
+        var replacements = new Dictionary<string, string>
+        {
+            {"[Name]", plukliste.Name },
+            {"[Adresse]", plukliste.Adresse }
+        };
+
+        foreach (var r in replacements)
+        {
+            template = template.Replace(r.Key, r.Value);
+        }
+
+        string linesHtml = "";
+
+        foreach (var item in plukliste.Lines)
+        {
+            linesHtml += $"<tr><td>{item.Amount}</td>" +
+                         $"<td>{item.Type}</td>" +
+                         $"<td>{item.ProductID}</td>" +
+                         $"<td>{item.Title}</td></tr>\n";
+        }
+
+        template = template.Replace("[LINES]", linesHtml);
+
+        var fileName = Path.GetFileNameWithoutExtension(xmlFilePath) + ".html";
+        var outputPath = Path.Combine(ImportDirectory, fileName);
+
+        File.WriteAllText(outputPath, template);
+    }
 
     static Pluklist? LoadPluklistFromFile(string filePath)
     {
@@ -150,4 +191,5 @@ class PluklisteProgram
             return null;
         }
     }
+
 }
