@@ -46,7 +46,7 @@ class PluklisteProgram
                 if (plukliste != null && plukliste.Lines != null)
                 {
                     Console.WriteLine("\n{0, -13}{1}", "Name:", plukliste.Name);
-                    Console.WriteLine("{0, -13}{1}", "Forsendelse:", plukliste.Forsendelse);
+                    Console.WriteLine("{0, -13}{1}", "Plukliste:", plukliste.Plukliste);
 
                     Console.WriteLine("\n{0,-7}{1,-9}{2,-20}{3}", "Antal", "Type", "Produktnr.", "Navn");
                     foreach (var item in plukliste.Lines)
