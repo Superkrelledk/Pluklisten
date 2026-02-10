@@ -152,8 +152,8 @@ class PluklisteProgram
 
         var replacements = new Dictionary<string, string>
         {
-            {"[Name]", plukliste.Name },
-            {"[Adresse]", plukliste.Adresse }
+            {"[Name]", plukliste.Name ?? "" },
+            {"[Adresse]", plukliste.Adresse ?? "" }
         };
 
         foreach (var r in replacements)
@@ -167,8 +167,8 @@ class PluklisteProgram
         {
             linesHtml += $"<tr><td>{item.Amount}</td>" +
                          $"<td>{item.Type}</td>" +
-                         $"<td>{item.ProductID}</td>" +
-                         $"<td>{item.Title}</td></tr>\n";
+                         $"<td>{item.ProductID ?? ""}</td>" +
+                         $"<td>{item.Title ?? ""}</td></tr>\n";
         }
 
         template = template.Replace("[Plukliste]", linesHtml);
@@ -176,7 +176,7 @@ class PluklisteProgram
         var fileName = Path.GetFileNameWithoutExtension(xmlFilePath) + ".html";
         var outputPath = Path.Combine(PrintDirectory, fileName);
 
-        File.WriteAllText(outputPath, template);
+        File.WriteAllText(outputPath, template, System.Text.Encoding.UTF8);
         
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
