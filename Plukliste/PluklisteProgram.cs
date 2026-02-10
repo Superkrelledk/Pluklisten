@@ -11,6 +11,7 @@ class PluklisteProgram
     private static ConsoleColor _standardColor;
     private const string ExportDirectory = "export";
     private const string ImportDirectory = "import";
+    private const string PrintDirectory = "print";
 
     static void Main()
     {
@@ -22,6 +23,7 @@ class PluklisteProgram
         _standardColor = Console.ForegroundColor;
         Directory.CreateDirectory(ImportDirectory);
         Directory.CreateDirectory(ExportDirectory);
+        Directory.CreateDirectory(PrintDirectory);
 
 
         files = LoadFiles();
@@ -172,9 +174,15 @@ class PluklisteProgram
         template = template.Replace("[Plukliste]", linesHtml);
 
         var fileName = Path.GetFileNameWithoutExtension(xmlFilePath) + ".html";
-        var outputPath = Path.Combine(ImportDirectory, fileName);
+        var outputPath = Path.Combine(PrintDirectory, fileName);
 
         File.WriteAllText(outputPath, template);
+        
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = outputPath,
+            UseShellExecute = true
+        });
     }
 
     static void MoveFileToImport(string filePath)
