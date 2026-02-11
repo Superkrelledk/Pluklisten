@@ -154,6 +154,7 @@ class PluklisteProgram
         {
             {"[Name]", plukliste.Name },
             {"[Adresse]", plukliste.Adresse }
+
         };
 
         foreach (var r in replacements)
@@ -165,10 +166,10 @@ class PluklisteProgram
 
         foreach (var item in plukliste.Lines)
         {
-            linesHtml += $"<tr><td>{item.Amount}</td>" +
-                         $"<td>{item.Type}</td>" +
-                         $"<td>{item.ProductID}</td>" +
-                         $"<td>{item.Title}</td></tr>\n";
+            linesHtml += $"<tr><td> {item.Amount}</td>" +
+                         $"<td> {item.Type}</td>" +
+                         $"<td> {item.ProductID}</td>" +
+                         $"<td> {item.Title}</td></tr>\n";
         }
 
         template = template.Replace("[Plukliste]", linesHtml);
