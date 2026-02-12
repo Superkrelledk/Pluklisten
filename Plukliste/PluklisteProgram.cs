@@ -5,6 +5,7 @@ using Plukliste.Readers;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
+using System.Linq;
 
 namespace Plukliste;
 
@@ -147,6 +148,11 @@ class PluklisteProgram
         var printItems = plukliste.Lines.Where(item => item.Type == ItemType.Print).ToList();
 
         // Generate packing slip with only physical items
+        // Split items into physical and print
+        var physicalItems = plukliste.Lines.Where(item => item.Type == ItemType.Fysisk).ToList();
+        var printItems = plukliste.Lines.Where(item => item.Type == ItemType.Print).ToList();
+
+        // Generate packing slip with only physical items
         string templateFile = plukliste.Type switch
         {
             "OPGRADE" => "PRINT-OPGRADE.html",
@@ -197,6 +203,43 @@ class PluklisteProgram
             FileName = outputPath,
             UseShellExecute = true
         });
+    }
+
+    private static void GeneratePrintGuide(Item printItem, Pluklist plukliste)
+    {
+        // ProductID is the guide template name (e.g., "PRINT-OPSIGELSE")
+        string guideTemplateFile = printItem.ProductID + ".html";
+        
+        if (!File.Exists(guideTemplateFile))
+        {
+            Console.WriteLine($"Warning: Guide template {guideTemplateFile} not found.");
+            return;
+        }
+
+        string guideTemplate = File.ReadAllText(guideTemplateFile);
+
+        // Replace placeholders
+        var replacements = new Dictionary<string, string>
+        {
+            {"[Name]", plukliste.Name ?? "" },
+            {"[Adresse]", plukliste.Adresse ?? "" }
+        };
+
+        foreach (var r in replacements)
+        {
+            guideTemplate = guideTemplate.Replace(r.Key, r.Value);
+        }
+
+        // Remove [Plukliste] tag from guides
+        guideTemplate = guideTemplate.Replace("[Plukliste]", "");
+
+        // Save to print folder with unique name
+        var guideName = $"{printItem.ProductID}_{DateTime.Now:yyyyMMddHHmmss}.html";
+        var outputPath = Path.Combine(PrintDirectory, guideName);
+
+        File.WriteAllText(outputPath, guideTemplate, System.Text.Encoding.UTF8);
+        
+        Console.WriteLine($"Vejledning genereret: {guideName}");
     }
 
     private static void GeneratePrintGuide(Item printItem, Pluklist plukliste)
