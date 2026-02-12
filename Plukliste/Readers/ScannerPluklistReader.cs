@@ -12,22 +12,22 @@ public class ScannerPluklistReader : IPluklistReader
         {
             Name = "Montør fra scanner",
             Type = "WELCOME",
-            Lines = new List<PluklisteLine>()
+            Lines = new List<Item>()
         };
 
         foreach (var line in lines)
         {
             var parts = line.Split(';');
 
-            pluklist.Lines.Add(new PluklisteLine
+            pluklist.Lines.Add(new Item
             {
                 Amount = int.Parse(parts[0]),
                 ProductID = parts[1],
                 Title = parts[2],
-                Type = parts[3]
+                Type = Enum.Parse<ItemType>(parts[3])
             });
         }
 
-        return pluklist;   // 🔴 DET HER MÅ IKKE MANGLE
+        return pluklist;
     }
 }
