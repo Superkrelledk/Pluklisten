@@ -4,12 +4,14 @@ public static class PluklistReaderFactory
 {
     public static IPluklistReader Create(string filePath)
     {
-        if (filePath.EndsWith(".xml"))
+        string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+        if (extension == ".xml")
             return new XmlPluklistReader();
 
-        if (filePath.EndsWith(".txt"))
+        if (extension == ".csv" || extension == ".txt")
             return new ScannerPluklistReader();
 
-        throw new NotSupportedException("File type not supported");
+        throw new NotSupportedException($"File type not supported: {extension}");
     }
 }
