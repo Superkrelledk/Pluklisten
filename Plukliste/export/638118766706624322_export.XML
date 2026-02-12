@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Pluklist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Type>OPGRADE</Type>
   <Name>Hans Jensen</Name>
-  <Forsendelse>Post Nord</Forsendelse>
+  <Plukliste>638118766706624322</Plukliste>
   <Adresse>Middelfartvej 9, 5500 Middelfart</Adresse>
   <Lines>
     <Item>
