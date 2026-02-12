@@ -1,8 +1,10 @@
 ﻿//Eksempel på funktionel kodning hvor der kun bliver brugt et model lag
 
-using System.Xml.Linq;
-using System.IO;
+using Plukliste.Models;
+using Plukliste.Readers;
 using System.Collections.Generic;
+using System.IO;
+using System.Xml.Linq;
 
 namespace Plukliste;
 
@@ -196,12 +198,8 @@ class PluklisteProgram
     {
         try
         {
-            using (FileStream file = File.OpenRead(filePath))
-            {
-                System.Xml.Serialization.XmlSerializer xmlSerializer =
-                    new System.Xml.Serialization.XmlSerializer(typeof(Pluklist));
-                return (Pluklist?)xmlSerializer.Deserialize(file);
-            }
+            var reader = PluklistReaderFactory.Create(filePath);
+            return reader.Read(filePath);
         }
         catch (Exception ex)
         {
@@ -209,4 +207,5 @@ class PluklisteProgram
             return null;
         }
     }
+
 }
