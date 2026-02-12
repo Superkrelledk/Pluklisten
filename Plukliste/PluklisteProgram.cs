@@ -103,7 +103,15 @@ class PluklisteProgram
 
                         if (plukliste != null)
                         {
-                            GeneratePrintHTML(plukliste, files[index]);
+                            // Only generate HTML for customer orders (not pickup/montør orders)
+                            if (plukliste.Type != "PICKUP")
+                            {
+                                GeneratePrintHTML(plukliste, files[index]);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Montør ordre - ingen udskrift nødvendig (afhentes på lager).");
+                            }
                         }
 
                         MoveFileToImport(files[index]);
@@ -138,7 +146,13 @@ class PluklisteProgram
 
     static List<string> LoadFiles()
     {
-        return Directory.EnumerateFiles(ExportDirectory).ToList();
+        return Directory.EnumerateFiles(ExportDirectory)
+            .Where(f => 
+                f.EndsWith(".xml", StringComparison.OrdinalIgnoreCase) ||
+                f.EndsWith(".XML", StringComparison.OrdinalIgnoreCase) ||
+                f.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) ||
+                f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
     public static void GeneratePrintHTML(Pluklist plukliste, string xmlFilePath)
