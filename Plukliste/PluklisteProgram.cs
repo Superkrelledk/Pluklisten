@@ -142,6 +142,11 @@ class PluklisteProgram
 
     public static void GeneratePrintHTML(Pluklist plukliste, string xmlFilePath)
     {
+                // Split items into physical and print
+        var physicalItems = plukliste.Lines.Where(item => item.Type == ItemType.Fysisk).ToList();
+        var printItems = plukliste.Lines.Where(item => item.Type == ItemType.Print).ToList();
+
+        // Generate packing slip with only physical items
         string templateFile = plukliste.Type switch
         {
             "OPGRADE" => "PRINT-OPGRADE.html",
@@ -165,7 +170,8 @@ class PluklisteProgram
 
         string linesHtml = "";
 
-        foreach (var item in plukliste.Lines)
+        // Only add physical items to packing slip
+        foreach (var item in physicalItems)
         {
             linesHtml += $"<tr><td>{item.Amount}</td>" +
                          $"<td>{item.Type}</td>" +
@@ -180,11 +186,54 @@ class PluklisteProgram
 
         File.WriteAllText(outputPath, template, System.Text.Encoding.UTF8);
         
+        // Generate separate guide files for print items
+        foreach (var printItem in printItems)
+        {
+            GeneratePrintGuide(printItem, plukliste);
+        }
+        
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
             FileName = outputPath,
             UseShellExecute = true
         });
+    }
+
+    private static void GeneratePrintGuide(Item printItem, Pluklist plukliste)
+    {
+        // ProductID is the guide template name (e.g., "PRINT-OPSIGELSE")
+        string guideTemplateFile = printItem.ProductID + ".html";
+        
+        if (!File.Exists(guideTemplateFile))
+        {
+            Console.WriteLine($"Warning: Guide template {guideTemplateFile} not found.");
+            return;
+        }
+
+        string guideTemplate = File.ReadAllText(guideTemplateFile);
+
+        // Replace placeholders
+        var replacements = new Dictionary<string, string>
+        {
+            {"[Name]", plukliste.Name ?? "" },
+            {"[Adresse]", plukliste.Adresse ?? "" }
+        };
+
+        foreach (var r in replacements)
+        {
+            guideTemplate = guideTemplate.Replace(r.Key, r.Value);
+        }
+
+        // Remove [Plukliste] tag from guides
+        guideTemplate = guideTemplate.Replace("[Plukliste]", "");
+
+        // Save to print folder with unique name
+        var guideName = $"{printItem.ProductID}_{DateTime.Now:yyyyMMddHHmmss}.html";
+        var outputPath = Path.Combine(PrintDirectory, guideName);
+
+        File.WriteAllText(outputPath, guideTemplate, System.Text.Encoding.UTF8);
+        
+        Console.WriteLine($"Vejledning genereret: {guideName}");
     }
 
     static void MoveFileToImport(string filePath)
